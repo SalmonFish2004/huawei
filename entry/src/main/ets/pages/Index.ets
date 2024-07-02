@@ -5,12 +5,12 @@ struct Index {
 
   build() {
     Column() {
-      Image($r("app.media"))
+      Image($r("app.media.BG"))
         .width("100%")
         .height(150)//.backgroundColor(Color.Green)
         .objectFit(ImageFit.Cover)
       Row({ space: 20 }) {
-        Image($r("app.media"))
+        Image($r("app.media.LOGO"))
           .width(40)
           .height(40)
         Text("建桥校友论坛")
@@ -30,15 +30,12 @@ struct Index {
       Row() {
         Text("密码")
           .fontSize(20)
-        TextInput({ placeholder: "请输入密码s" })
+        TextInput({ placeholder: "请输入密码" })
           .width(200)
       }
       .margin({ top: 30, left: 20, right: 20, })
     }
     .height('100%')
     .width('100%')
-
-    //test
-    Text(this.message)
   }
 }
