@@ -14,6 +14,9 @@ export default class EntryAbility extends UIAbility {
   onWindowStageCreate(windowStage: window.WindowStage): void {
     // Main window is created, set main page for this ability
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
+    let props = windowStage.getMainWindowSync().getWindowSystemBarProperties()
+    props.statusBarColor = "#000000"
+    windowStage.getMainWindowSync().setWindowSystemBarProperties(props)
 
     windowStage.loadContent('pages/Index', (err) => {
       if (err.code) {
