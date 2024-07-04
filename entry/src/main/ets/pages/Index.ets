@@ -21,7 +21,7 @@ struct Index {
           .fontSize(30)
           .fontWeight(FontWeight.Bold)
       }
-      .margin({ top: 50 ,bottom:20})
+      .margin({ top: 50, bottom: 20 })
 
       Image($r("app.media.BG"))
         .width("100%")
@@ -49,11 +49,7 @@ struct Index {
           .width(200)
       }
       .width("100%")
-//<<<<<<< Updated upstream
       .justifyContent(FlexAlign.SpaceBetween)
-      .margin({ top: 30, left: 20, right: 20, })
-      .padding({ left: 40, right: 40 })
-//=======
       .padding({ left: 50, right: 40 })
       .margin({ top: 20, left: 20, right: 20 })
 
@@ -72,7 +68,7 @@ struct Index {
         Text("🔽")
           .fontSize(20)
       }
-      .bindMenu(this.menuBuilder)
+      .bindMenu(this.menuBuilder, { placement: Placement.Bottom })
       .width("50%")
       .borderRadius(8)
       .height(40)
@@ -83,7 +79,7 @@ struct Index {
       .backgroundColor(0xF1F2F3)
 
       Blank()
-      Button("注册")
+      Button("登录")
         .width("80%")
 
       Row() {
@@ -92,10 +88,7 @@ struct Index {
         Text("我接受隐私条款与用户协议")
       }
       .margin(50)
-
-//>>>>>>> Stashed changes
     }
-
     .height('100%')
     .width('100%')
   }
