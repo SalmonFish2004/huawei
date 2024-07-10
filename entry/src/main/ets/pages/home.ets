@@ -7,10 +7,63 @@ import { userGroup } from '../models/userGroup';
 import { phoneZones } from '../models/phoneZones';
 import { departments } from '../models/departments';
 
+function ifLoginButton(a:number , b:number,c:boolean){
+  if (a == 11 && b >= 6) {
+    return c = true
+  } else {
+    return c = false
+  }
+}
+
+
 @Entry
 @Component
 struct home {
-  @State message: string = 'Hello';
+
+  dialogController: CustomDialogController | null = new CustomDialogController({
+    builder: CustomDialogExample({
+      confirm: () => {
+        this.onAccept()
+        this.user.isPrivacy = true
+        this.isPrivacySelected = true
+      },
+    }),
+    cancel: this.exitApp,
+    autoCancel: true,
+    onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
+      console.info("reason=" + JSON.stringify(dismissDialogAction.reason))
+      console.log("dialog onWillDismiss")
+      if (dismissDialogAction.reason == DismissReason.PRESS_BACK) {
+        dismissDialogAction.dismiss()
+      }
+      if (dismissDialogAction.reason == DismissReason.TOUCH_OUTSIDE) {
+        dismissDialogAction.dismiss()
+      }
+    },
+    alignment: DialogAlignment.Bottom,
+    offset: { dx: 0, dy: -20 },
+    gridCount: 4,
+    customStyle: false,
+    cornerRadius: 10,
+  })
+
+  // 在自定义组件即将析构销毁时将dialogController置空
+  aboutToDisappear() {
+    this.dialogController = null // 将dialogController置空
+  }
+
+  onCancel() {
+    console.info('Callback when the first button is clicked')
+  }
+
+  onAccept() {
+    console.info('Callback when the second button is clicked')
+  }
+
+  exitApp() {
+    console.info('Click the callback in the blank area')
+  }
+
   @State currentDepartmentIndex: number = 0;
   @State currentphoneZoneIndex: number = 0;
   @State currentuserGroupIndex: number = 0;
@@ -19,7 +72,6 @@ struct home {
   user = new User()
   @State PH1size: number = this.defaultPHFont;
   @State PH2size: number = this.defaultPHFont;
-  @State buttonColor: number = 0xF1F2F3;
   @State loginButtonState: boolean = false;
   @State passwdInputState: Visibility = Visibility.Visible;
   @State phoneInputState: Visibility = Visibility.None;
@@ -27,9 +79,10 @@ struct home {
   @State pinputText: string = '';
   @State ClearPhoneInputstate: Visibility = Visibility.None;
   @State ClearPInputstate: Visibility = Visibility.None;
-
-
+  @State isPrivacySelected : boolean  = this.user.isPrivacy;
   controller: TextInputController = new TextInputController();
+
+
 
   //control
 
@@ -85,8 +138,8 @@ struct home {
               .width(75)
               .id("phoneZone")
               .alignRules({
-                top:{anchor:"__container__",align: VerticalAlign.Top},
-                left:{anchor:"__container__",align: HorizontalAlign.Start},
+                top: { anchor: "__container__", align: VerticalAlign.Top },
+                left: { anchor: "__container__", align: HorizontalAlign.Start },
               })
               .backgroundColor(Color.White)
               // 跳转按钮绑定onClick事件，点击时跳转到归属地页
@@ -100,49 +153,44 @@ struct home {
                 })
               })
 
-              TextInput({ placeholder: "请输入手机号", text: this.phoneinputText, controller: this.controller })
+              TextInput({ placeholder: "请输入手机号", text: $$this.phoneinputText, controller: this.controller })
                 .inputFilter('[0-9]', (error) => {
                   promptAction.showToast({ message: "不是数字类型" })
                 })
                 .tabIndex(1)
                 .padding({ left: 5 })
                 .maxLength(11)
-                .type(InputType.PhoneNumber)
+                .type(InputType.USER_NAME)
                 .fontSize(25)
                 .backgroundColor(Color.White)
                 .onChange((value) => {
-                  this.phoneinputText = value;
                   this.user.userName = this.phoneinputText;
-                  if(this.phoneinputText == ''){
+                  if (this.phoneinputText == '') {
                     this.ClearPhoneInputstate = Visibility.None
-                  } else{
+                  } else {
                     this.ClearPhoneInputstate = Visibility.Visible
                   }
-                  if ((this.user.userName.length == 11 && this.user.passWord.length >= 6) ||
-                    (this.phoneInputState === Visibility.Visible && this.user.userName.length == 11)) {
-                    this.buttonColor = 0x0066FF
-                    this.loginButtonState = true
-                  } else {
-                    this.buttonColor = 0xF1F2F3
-                    this.loginButtonState = false
+                  this.loginButtonState = ifLoginButton(this.user.userName.length,this.user.passWord.length,this.loginButtonState)
+                })
+                .onEditChange((isEditing: boolean)=>{
+                  if(isEditing){
+                    this.PH1size = this.smallPHFont
+                  }else{
+                    this.PH1size = this.defaultPHFont
                   }
-                })
-                .onFocus(() => {
-                  this.PH1size = this.smallPHFont
-                })
-                .onBlur(() => {
-                  this.PH1size = this.defaultPHFont
                 })
                 .placeholderFont({ size: this.PH1size })
                 .enterKeyType(EnterKeyType.Next)
                 .height("100%")
-                .width(200)
                 .alignRules({
-                  top:{anchor:"__container__",align: VerticalAlign.Top},
-                  left:{anchor:"phoneZone",align: HorizontalAlign.End },
+                  top: { anchor: "__container__", align: VerticalAlign.Top },
+                  left: { anchor: "phoneZone", align: HorizontalAlign.End },
+                  right: { anchor: "__container__", align: HorizontalAlign.End },
                 })
-              Row(){
-                Button(){Text("❌️")}
+              Row() {
+                Button() {
+                  Text("❌️")
+                }
                 .onClick(() => {
                   this.user.userName = '';
                   this.phoneinputText = '';
@@ -157,7 +205,7 @@ struct home {
               .width("15%")
               .height("100%")
               .alignRules({
-                right:{anchor:"__container__",align: HorizontalAlign.End},
+                right: { anchor: "__container__", align: HorizontalAlign.End },
               })
             }
             .width("100%")
@@ -187,64 +235,60 @@ struct home {
         .visibility(this.phoneInputState)
 
         Column() {
-          RelativeContainer(){
-            TextInput({ placeholder: "请输入密码",text:this.pinputText })
+          RelativeContainer() {
+            TextInput({ placeholder: "请输入密码", text: $$this.pinputText ,controller: this.controller})
               .constraintSize({ minHeight: 50 })
               .tabIndex(1)
               .fontSize(18)
               .onChange((value: string) => {
-                this.pinputText = value;
                 this.user.passWord = this.pinputText;
-                if(this.pinputText == ''){
+                if (this.pinputText == '') {
                   this.ClearPInputstate = Visibility.None
-                } else{
+                } else {
                   this.ClearPInputstate = Visibility.Visible
                 }
-                if (this.user.userName.length == 11 && this.user.passWord.length >= 6) {
-                  this.buttonColor = 0x0066FF
-                  this.loginButtonState = true
-                } else {
-                  this.buttonColor = 0xF1F2F3
-                  this.loginButtonState = false
+                this.loginButtonState = ifLoginButton(this.user.userName.length,this.user.passWord.length,this.loginButtonState)
+                console.debug(`isEditing2 ${this.loginButtonState}`)
+              })
+              .onEditChange((isEditing: boolean)=>{
+                if(isEditing){
+                  this.PH2size = this.smallPHFont
+                }else{
+                  this.PH2size = this.defaultPHFont
                 }
-              })
-              .onFocus(() => {
-                this.PH2size = this.smallPHFont
-              })
-              .onBlur(() => {
-                this.PH2size = this.defaultPHFont
               })
               .enterKeyType(EnterKeyType.Done)
               .placeholderFont({ size: this.PH2size })
               .backgroundColor(Color.White)
               .type(InputType.NEW_PASSWORD)
               .padding({ left: 5 })
-            Row(){
-              Button(){
+            Row() {
+              Button() {
                 Text("❌️")
               }
-                .onClick(() => {
-                  this.user.passWord = '';
-                  this.pinputText = '';
-                })
-                .backgroundColor(Color.White)
-                .fontColor(Color.Black)
-                .width("68%")
-                .height("68%")
+              .onClick(() => {
+                this.user.passWord = '';
+                this.pinputText = '';
+              })
+              .backgroundColor(Color.White)
+              .fontColor(Color.Black)
+              .width("68%")
+              .height("68%")
             }
             .visibility(this.ClearPInputstate)
             .offset({
-              x:-30
+              x: -30
             })
             .width("15%")
             .height("100%")
             .alignRules({
-              top:{anchor:"__container__",align: VerticalAlign.Top},
-              right:{anchor:"__container__",align: HorizontalAlign.End},
+              top: { anchor: "__container__", align: VerticalAlign.Top },
+              right: { anchor: "__container__", align: HorizontalAlign.End },
             })
           }
           .width("82%")
           .height(48.5)
+
           Row() {
           }.width("80%").height(1.5).backgroundColor("#AAAAAA")
         }
@@ -254,6 +298,7 @@ struct home {
 
         Row() {
           Checkbox()
+            .select(this.isPrivacySelected)
             .shape(CheckBoxShape.ROUNDED_SQUARE)
             .onChange((isCheck: boolean) => {
               this.user.isPrivacy = isCheck
@@ -319,16 +364,16 @@ struct home {
       Row() {
         Button("登录")
           .width("80%")
+          .enabled(this.loginButtonState)
           .onClick(() => {
-            if (!this.user.isPrivacy) {
-
-            }
-            if (this.user.isPrivacy && this.loginButtonState) {
+            if(!this.user.isPrivacy){
+              if (this.dialogController != null) {
+                this.dialogController.open()
+              }
+            }else {
               console.debug(`${JSON.stringify(this.user)}`)
             }
           })
-          .stateEffect(this.loginButtonState)
-          .backgroundColor(this.buttonColor)
       }
       .height("100%")
       .layoutWeight(1)
@@ -337,13 +382,17 @@ struct home {
       Row() {
         Button("获取短信验证码")
           .width("80%")
+          .enabled(this.loginButtonState)
           .onClick(() => {
-            if (this.user.isPrivacy && this.loginButtonState) {
-              //console.debug(`${JSON.stringify(this.user)}`)
+            console.debug(`isEditing2 ${this.loginButtonState}`)
+            if(!this.user.isPrivacy){
+              if (this.dialogController != null) {
+                this.dialogController.open()
+              }
+            }else {
+              console.debug(`${JSON.stringify(this.user)}`)
             }
           })
-          .stateEffect(this.loginButtonState)
-          .backgroundColor(this.buttonColor)
       }
       .height("100%")
       .layoutWeight(1)
@@ -363,10 +412,8 @@ struct home {
             this.passwdInputState = Visibility.None
             this.pinputText = ""
             if (this.user.userName.length == 11) {
-              this.buttonColor = 0x0066FF
               this.loginButtonState = true
             } else {
-              this.buttonColor = 0xF1F2F3
               this.loginButtonState = false
             }
           })
@@ -387,14 +434,7 @@ struct home {
           .onClick(() => {
             this.phoneInputState = Visibility.None
             this.passwdInputState = Visibility.Visible
-            if ((this.user.userName.length == 11 && this.user.passWord.length >= 6) ||
-              (this.phoneInputState === Visibility.Visible && this.user.userName.length == 11)) {
-              this.buttonColor = 0x0066FF
-              this.loginButtonState = true
-            } else {
-              this.buttonColor = 0xF1F2F3
-              this.loginButtonState = false
-            }
+            this.loginButtonState = ifLoginButton(this.user.userName.length,this.user.passWord.length,this.loginButtonState)
           })
         }
         .width("50%")
@@ -415,15 +455,14 @@ struct home {
       .margin({ top: 20 })
       .height("100%")
       .layoutWeight(2)
-
-      Row() {
-        Blank()
-      }
-      .height("100%")
-      .layoutWeight(5)
     }
+    .id("root")
     .height('100%')
     .width('100%')
+    .onClick(()=>{
+      this.controller.stopEditing()
+    })
+    .focusable(true)
   }
 
   @Builder
@@ -448,5 +487,78 @@ struct home {
     .divider({ strokeWidth: 2 })
     .width(140)
     .height(userGroup.length * 32 - 2)
+  }
+}
+
+@CustomDialog
+@Component
+struct CustomDialogExample {
+  controller?: CustomDialogController
+  // 若尝试在CustomDialog中传入多个其他的Controller，以实现在CustomDialog中打开另一个或另一些CustomDialog，那么此处需要将指向自己的controller放在所有controller的后面
+  cancel: () => void = () => {
+  }
+  confirm: () => void = () => {
+  }
+
+  build() {
+    Column() {
+      Text('请阅读并同意以下条款').fontSize(18).fontWeight(FontWeight.Bolder).margin({ top: 30, bottom: 10 })
+      Row() {
+        Row() {
+          Button() {
+            Text("《隐私条款》")
+              .fontSize(18)
+          }
+          .onClick(() => {
+            console.info(`Succeeded in clicking the 'Privacy' button.`)
+            // 跳转到隐私条款页
+            router.pushUrl({ url: 'pages/Privacy' }).then(() => {
+              console.info('Succeeded in jumping to the Privacy page.')
+
+            }).catch((err: BusinessError) => {
+              console.error(`Failed to jump to the Privacy page. Code is ${err.code}, message is ${err.message}`)
+            })
+          })
+          .backgroundColor(Color.White)
+          .fontColor(Color.Blue)
+
+          Row() {
+          }.width("10%")
+
+          Button() {
+            Text("《用户协议》")
+              .fontSize(18)
+          }
+          .onClick(() => {
+            console.info(`Succeeded in clicking the 'UserLience' button.`)
+            // 跳转到用户协议页
+            router.pushUrl({ url: 'pages/UserLience' }).then(() => {
+              console.info('Succeeded in jumping to the UserLience page.')
+
+            }).catch((err: BusinessError) => {
+              console.error(`Failed to jump to the UserLience page. Code is ${err.code}, message is ${err.message}`)
+            })
+          })
+          .backgroundColor(Color.White)
+          .fontColor(Color.Blue)
+        }
+        .width("100%")
+        .alignItems(VerticalAlign.Center)
+        .justifyContent(FlexAlign.Center)
+        .height(70)
+      }
+      .width("100%")
+
+      Button('confirm')
+        .onClick(() => {
+          if (this.controller != undefined) {
+            this.controller.close()
+            this.confirm()
+          }
+        })
+        .margin({bottom:30})
+        .width("100%")
+
+    }.width("80%")
   }
 }
