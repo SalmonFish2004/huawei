@@ -28,6 +28,7 @@ struct home {
   @State ClearPhoneInputstate: Visibility = Visibility.None;
   @State ClearPInputstate: Visibility = Visibility.None;
 
+
   controller: TextInputController = new TextInputController();
 
   //control
@@ -360,6 +361,14 @@ struct home {
           .onClick(() => {
             this.phoneInputState = Visibility.Visible
             this.passwdInputState = Visibility.None
+            this.pinputText = ""
+            if (this.user.userName.length == 11) {
+              this.buttonColor = 0x0066FF
+              this.loginButtonState = true
+            } else {
+              this.buttonColor = 0xF1F2F3
+              this.loginButtonState = false
+            }
           })
         }
         .width("50%")
@@ -378,6 +387,14 @@ struct home {
           .onClick(() => {
             this.phoneInputState = Visibility.None
             this.passwdInputState = Visibility.Visible
+            if ((this.user.userName.length == 11 && this.user.passWord.length >= 6) ||
+              (this.phoneInputState === Visibility.Visible && this.user.userName.length == 11)) {
+              this.buttonColor = 0x0066FF
+              this.loginButtonState = true
+            } else {
+              this.buttonColor = 0xF1F2F3
+              this.loginButtonState = false
+            }
           })
         }
         .width("50%")
