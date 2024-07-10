@@ -25,6 +25,9 @@ struct home {
   @State phoneInputState: Visibility = Visibility.None;
   @State phoneinputText: string = '';
   @State pinputText: string = '';
+  @State ClearPhoneInputstate: Visibility = Visibility.None;
+  @State ClearPInputstate: Visibility = Visibility.None;
+
   controller: TextInputController = new TextInputController();
 
   //control
@@ -109,6 +112,11 @@ struct home {
                 .onChange((value) => {
                   this.phoneinputText = value;
                   this.user.userName = this.phoneinputText;
+                  if(this.phoneinputText == ''){
+                    this.ClearPhoneInputstate = Visibility.None
+                  } else{
+                    this.ClearPhoneInputstate = Visibility.Visible
+                  }
                   if ((this.user.userName.length == 11 && this.user.passWord.length >= 6) ||
                     (this.phoneInputState === Visibility.Visible && this.user.userName.length == 11)) {
                     this.buttonColor = 0x0066FF
@@ -143,6 +151,7 @@ struct home {
                 .height("68%")
                 .width("68%")
               }
+              .visibility(this.ClearPhoneInputstate)
               .justifyContent(FlexAlign.End)
               .width("15%")
               .height("100%")
@@ -185,6 +194,11 @@ struct home {
               .onChange((value: string) => {
                 this.pinputText = value;
                 this.user.passWord = this.pinputText;
+                if(this.pinputText == ''){
+                  this.ClearPInputstate = Visibility.None
+                } else{
+                  this.ClearPInputstate = Visibility.Visible
+                }
                 if (this.user.userName.length == 11 && this.user.passWord.length >= 6) {
                   this.buttonColor = 0x0066FF
                   this.loginButtonState = true
@@ -217,6 +231,7 @@ struct home {
                 .width("68%")
                 .height("68%")
             }
+            .visibility(this.ClearPInputstate)
             .offset({
               x:-30
             })
