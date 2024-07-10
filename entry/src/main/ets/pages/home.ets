@@ -1,13 +1,14 @@
 import promptAction from '@ohos.promptAction';
 import { router } from '@kit.ArkUI';
-import { display } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { User } from '../models/User';
 import { userGroup } from '../models/userGroup';
 import { phoneZones } from '../models/phoneZones';
-import { departments } from '../models/departments';
+import Data from '../models/Data'
+import RegFinishDialog from '../component/RegFinishDialog'
+import isPrivacyDialog from '../component/isPrivacyDialog'
 
-function ifLoginButton(a:number , b:number,c:boolean){
+function ifLoginButton(a: number, b: number, c: boolean) {
   if (a == 11 && b >= 6) {
     return c = true
   } else {
@@ -19,13 +20,31 @@ function ifLoginButton(a:number , b:number,c:boolean){
 @Entry
 @Component
 struct home {
+  @State currentDepartmentIndex: number = 0;
+  @State currentphoneZoneIndex: number = 0;
+  @State currentuserGroupIndex: number = 0;
+  @State defaultPHFont: number = 15;
+  @State smallPHFont: number = 25;
+  user = new User()
+  @State PH1size: number = this.defaultPHFont;
+  @State PH2size: number = this.defaultPHFont;
+  @State loginButtonState: boolean = false;
+  @State passwdInputState: Visibility = Visibility.Visible;
+  @State phoneInputState: Visibility = Visibility.None;
+  @State phoneinputText: string = '';
+  @State pinputText: string = '';
+  @State ClearPhoneInputstate: Visibility = Visibility.None;
+  @State ClearPInputstate: Visibility = Visibility.None;
+  @State isPrivacySelected: boolean = false;
 
+  controller: TextInputController = new TextInputController();
+  //control
   dialogController: CustomDialogController | null = new CustomDialogController({
-    builder: CustomDialogExample({
+    builder: isPrivacyDialog({
       confirm: () => {
-        this.onAccept()
         this.user.isPrivacy = true
         this.isPrivacySelected = true
+        this.onAccept()
       },
     }),
     cancel: this.exitApp,
@@ -47,49 +66,45 @@ struct home {
     cornerRadius: 10,
   })
 
+  controller2: CustomDialogController = new CustomDialogController({
+    builder: RegFinishDialog({
+      username: this.user.userName,
+      confirm: () => {
+        router.pushUrl({
+          url: "pages/NewsPage",
+          params: this.user
+        })
+      }
+    }),
+    height: 200,
+    autoCancel: false
+  })
+
   // 在自定义组件即将析构销毁时将dialogController置空
   aboutToDisappear() {
     this.dialogController = null // 将dialogController置空
   }
 
   onCancel() {
-    console.info('Callback when the first button is clicked')
   }
 
   onAccept() {
-    console.info('Callback when the second button is clicked')
   }
 
   exitApp() {
-    console.info('Click the callback in the blank area')
   }
 
-  @State currentDepartmentIndex: number = 0;
-  @State currentphoneZoneIndex: number = 0;
-  @State currentuserGroupIndex: number = 0;
-  @State defaultPHFont: number = 15;
-  @State smallPHFont: number = 25;
-  user = new User()
-  @State PH1size: number = this.defaultPHFont;
-  @State PH2size: number = this.defaultPHFont;
-  @State loginButtonState: boolean = false;
-  @State passwdInputState: Visibility = Visibility.Visible;
-  @State phoneInputState: Visibility = Visibility.None;
-  @State phoneinputText: string = '';
-  @State pinputText: string = '';
-  @State ClearPhoneInputstate: Visibility = Visibility.None;
-  @State ClearPInputstate: Visibility = Visibility.None;
-  @State isPrivacySelected : boolean  = this.user.isPrivacy;
-  controller: TextInputController = new TextInputController();
+  onPageShow(): void{
+    if(router.getParams()){
+      let params:Data  = router.getParams() as Data
+      this.currentphoneZoneIndex = params.id as number
+    }
 
-
-
-  //control
+  }
 
   build() {
 
     Column() {
-
       Row() {
         Text("Hi  欢迎回来！")
           .fontSize(30)
@@ -146,7 +161,7 @@ struct home {
               .onClick(() => {
                 console.info(`Succeeded in clicking the 'phoneZone' button.`)
                 // 跳转到归属地页
-                router.pushUrl({ url: 'pages/phoneZone', params: this.currentphoneZoneIndex }).then(() => {
+                router.pushUrl({ url: 'pages/phoneZone', params: new Data(this.currentphoneZoneIndex)}).then(() => {
                   console.info('Succeeded in jumping to the phoneZone page.')
                 }).catch((err: BusinessError) => {
                   console.error(`Failed to jump to the phoneZone page. Code is ${err.code}, message is ${err.message}`)
@@ -170,12 +185,17 @@ struct home {
                   } else {
                     this.ClearPhoneInputstate = Visibility.Visible
                   }
-                  this.loginButtonState = ifLoginButton(this.user.userName.length,this.user.passWord.length,this.loginButtonState)
+                  if (this.user.userName.length == 11 &&
+                    (this.user.passWord.length >= 6 || this.phoneInputState == Visibility.Visible)) {
+                    this.loginButtonState = true
+                  } else {
+                    this.loginButtonState = false
+                  }
                 })
-                .onEditChange((isEditing: boolean)=>{
-                  if(isEditing){
+                .onEditChange((isEditing: boolean) => {
+                  if (isEditing) {
                     this.PH1size = this.smallPHFont
-                  }else{
+                  } else {
                     this.PH1size = this.defaultPHFont
                   }
                 })
@@ -236,7 +256,7 @@ struct home {
 
         Column() {
           RelativeContainer() {
-            TextInput({ placeholder: "请输入密码", text: $$this.pinputText ,controller: this.controller})
+            TextInput({ placeholder: "请输入密码", text: $$this.pinputText, controller: this.controller })
               .constraintSize({ minHeight: 50 })
               .tabIndex(1)
               .fontSize(18)
@@ -247,13 +267,15 @@ struct home {
                 } else {
                   this.ClearPInputstate = Visibility.Visible
                 }
-                this.loginButtonState = ifLoginButton(this.user.userName.length,this.user.passWord.length,this.loginButtonState)
-                console.debug(`isEditing2 ${this.loginButtonState}`)
+                if (this.phoneInputState == Visibility.None) {
+                  this.loginButtonState =
+                    ifLoginButton(this.user.userName.length, this.user.passWord.length, this.loginButtonState)
+                }
               })
-              .onEditChange((isEditing: boolean)=>{
-                if(isEditing){
+              .onEditChange((isEditing: boolean) => {
+                if (isEditing) {
                   this.PH2size = this.smallPHFont
-                }else{
+                } else {
                   this.PH2size = this.defaultPHFont
                 }
               })
@@ -302,6 +324,7 @@ struct home {
             .shape(CheckBoxShape.ROUNDED_SQUARE)
             .onChange((isCheck: boolean) => {
               this.user.isPrivacy = isCheck
+              this.isPrivacySelected = this.user.isPrivacy
             })
           Text("我已阅读并同意")
             .fontSize(14)
@@ -366,12 +389,22 @@ struct home {
           .width("80%")
           .enabled(this.loginButtonState)
           .onClick(() => {
-            if(!this.user.isPrivacy){
+            if (!this.user.isPrivacy) {
               if (this.dialogController != null) {
                 this.dialogController.open()
               }
-            }else {
-              console.debug(`${JSON.stringify(this.user)}`)
+            } else {
+              if(this.user.userName=='19946156936'){
+                if(this.user.passWord == '040310'){
+                  this.controller2.open()
+                }
+                else {
+                  //this.controller3.open()
+                  }
+              }
+              else {
+                //this.controller4.open()
+              }
             }
           })
       }
@@ -384,12 +417,11 @@ struct home {
           .width("80%")
           .enabled(this.loginButtonState)
           .onClick(() => {
-            console.debug(`isEditing2 ${this.loginButtonState}`)
-            if(!this.user.isPrivacy){
+            if (!this.user.isPrivacy) {
               if (this.dialogController != null) {
                 this.dialogController.open()
               }
-            }else {
+            } else {
               console.debug(`${JSON.stringify(this.user)}`)
             }
           })
@@ -434,7 +466,8 @@ struct home {
           .onClick(() => {
             this.phoneInputState = Visibility.None
             this.passwdInputState = Visibility.Visible
-            this.loginButtonState = ifLoginButton(this.user.userName.length,this.user.passWord.length,this.loginButtonState)
+            this.loginButtonState =
+              ifLoginButton(this.user.userName.length, this.user.passWord.length, this.loginButtonState)
           })
         }
         .width("50%")
@@ -459,7 +492,7 @@ struct home {
     .id("root")
     .height('100%')
     .width('100%')
-    .onClick(()=>{
+    .onClick(() => {
       this.controller.stopEditing()
     })
     .focusable(true)
@@ -487,78 +520,5 @@ struct home {
     .divider({ strokeWidth: 2 })
     .width(140)
     .height(userGroup.length * 32 - 2)
-  }
-}
-
-@CustomDialog
-@Component
-struct CustomDialogExample {
-  controller?: CustomDialogController
-  // 若尝试在CustomDialog中传入多个其他的Controller，以实现在CustomDialog中打开另一个或另一些CustomDialog，那么此处需要将指向自己的controller放在所有controller的后面
-  cancel: () => void = () => {
-  }
-  confirm: () => void = () => {
-  }
-
-  build() {
-    Column() {
-      Text('请阅读并同意以下条款').fontSize(18).fontWeight(FontWeight.Bolder).margin({ top: 30, bottom: 10 })
-      Row() {
-        Row() {
-          Button() {
-            Text("《隐私条款》")
-              .fontSize(18)
-          }
-          .onClick(() => {
-            console.info(`Succeeded in clicking the 'Privacy' button.`)
-            // 跳转到隐私条款页
-            router.pushUrl({ url: 'pages/Privacy' }).then(() => {
-              console.info('Succeeded in jumping to the Privacy page.')
-
-            }).catch((err: BusinessError) => {
-              console.error(`Failed to jump to the Privacy page. Code is ${err.code}, message is ${err.message}`)
-            })
-          })
-          .backgroundColor(Color.White)
-          .fontColor(Color.Blue)
-
-          Row() {
-          }.width("10%")
-
-          Button() {
-            Text("《用户协议》")
-              .fontSize(18)
-          }
-          .onClick(() => {
-            console.info(`Succeeded in clicking the 'UserLience' button.`)
-            // 跳转到用户协议页
-            router.pushUrl({ url: 'pages/UserLience' }).then(() => {
-              console.info('Succeeded in jumping to the UserLience page.')
-
-            }).catch((err: BusinessError) => {
-              console.error(`Failed to jump to the UserLience page. Code is ${err.code}, message is ${err.message}`)
-            })
-          })
-          .backgroundColor(Color.White)
-          .fontColor(Color.Blue)
-        }
-        .width("100%")
-        .alignItems(VerticalAlign.Center)
-        .justifyContent(FlexAlign.Center)
-        .height(70)
-      }
-      .width("100%")
-
-      Button('confirm')
-        .onClick(() => {
-          if (this.controller != undefined) {
-            this.controller.close()
-            this.confirm()
-          }
-        })
-        .margin({bottom:30})
-        .width("100%")
-
-    }.width("80%")
   }
 }

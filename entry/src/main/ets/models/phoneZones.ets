@@ -1,4 +1,5 @@
 export const phoneZones = [
   "+86",
-  "+1"
+  "+1",
+  "+81"
 ]

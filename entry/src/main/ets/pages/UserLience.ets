@@ -37,11 +37,9 @@ struct UserLience {
       .height(60)
 
       Row() {
-
-      }
-
-      Row() {
-
+        Text("这是建桥论坛用户协议")
+          .fontSize(15)
+          .textAlign(TextAlign.Start)
       }
     }
   }

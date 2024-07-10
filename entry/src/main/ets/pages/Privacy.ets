@@ -37,11 +37,9 @@ struct Privacy {
       .height(60)
 
       Row() {
-
-      }
-
-      Row() {
-
+       Text("这是建桥论坛隐私条款")
+         .fontSize(15)
+         .textAlign(TextAlign.Start)
       }
     }
   }

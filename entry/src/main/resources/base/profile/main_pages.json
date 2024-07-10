@@ -1,10 +1,9 @@
 {
   "src": [
-    "pages/Index",
     "pages/home",
     "pages/phoneZone",
+    "pages/NewsPage",
     "pages/Privacy",
-    "pages/UserLience",
-    "pages/Page"
+    "pages/UserLience"
   ]
 }
