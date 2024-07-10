@@ -1,15 +1,32 @@
+import RegFinishDialog from '../component/RegFinishDialog';
+import promptAction from '@ohos.promptAction';
+import { router } from '@kit.ArkUI';
+import { BusinessError } from '@kit.BasicServicesKit';
+import { User } from '../models/User';
+import { userGroup } from '../models/userGroup';
+import { phoneZones } from '../models/phoneZones';
+import { departments } from  '../models/departments';
+
 @Entry
 @Component
-struct Index {
+struct home {
   @State message: string = 'Hello';
   @State currentDepartmentIndex: number = 0
-  departments = [
-    "请选择院系",
-    "信息技术学院",
-    "外国语学院",
-    "珠宝学院",
-    "机电学院"
-  ]
+  @State user:User = new User()
+
+  controller: CustomDialogController = new CustomDialogController({
+    builder: RegFinishDialog({
+      userName: this.user.userName,
+      confirm: () => {
+        router.pushUrl({
+          url: "pages/",
+          params: this.user
+        })
+      },
+    }),
+    height: 200,
+    autoCancel: false
+  })
 
   build() {
     Column() {
@@ -32,18 +49,24 @@ struct Index {
         Text("用户名")
           .fontSize(20)
         TextInput({ placeholder: "请输入用户名" })
+          .onChange((value: string) => {
+            this.user.userName = value
+          })
           .borderRadius(8)
           .width(200)
       }
       .width("100%")
       .justifyContent(FlexAlign.SpaceBetween)
-      .margin({ top: 30, left: 20, right: 20, })
+      .margin({ top: 30, left: 20, right: 20 })
       .padding({ left: 40, right: 40 })
 
       Row() {
         Text("密码")
           .fontSize(20)
         TextInput({ placeholder: "请输入密码" })
+          .onChange((value: string) => {
+            this.user.passWord = value
+          })
           .borderRadius(8)
           .type(InputType.NEW_PASSWORD)
           .width(200)
@@ -63,7 +86,7 @@ struct Index {
       .margin({ top: 20 })
 
       Row() {
-        Text(`${this.departments[this.currentDepartmentIndex]}`)
+        Text(`${departments[this.currentDepartmentIndex]}`)
           .fontSize(18)
         Text("🔽")
           .fontSize(20)
@@ -81,23 +104,29 @@ struct Index {
       Blank()
       Button("登录")
         .width("80%")
+        .onClick(() => {
+          console.debug(`${JSON.stringify(this.user)}`)
+        })
 
       Row() {
         Checkbox()
           .shape(CheckBoxShape.ROUNDED_SQUARE)
+          .onChange((isCheck: boolean) => {
+            this.user.isPrivacy = isCheck
+          })
         Text("我接受隐私条款与用户协议")
       }
+
       .margin(50)
     }
     .height('100%')
     .width('100%')
   }
 
-  @
-  Builder
+  @Builder
   menuBuilder() {
     List() {
-      ForEach(this.departments, (item: string, index: number) => {
+      ForEach(departments, (item: string, index: number) => {
         ListItem() {
           Row() {
             Text(item)
@@ -115,6 +144,6 @@ struct Index {
     }
     .divider({ strokeWidth: 2 })
     .width(140)
-    .height(this.departments.length * 32 - 2)
+    .height(departments.length * 32 - 2)
   }
 }
