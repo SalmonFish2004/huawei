@@ -44,9 +44,8 @@ struct NewsPage {
     }
     .onScrollIndex((start: number, end: number, center: number) => {
       console.log(`start ${start}, end ${end}, center ${center}, total ${this.newsList.length}`)
-
-      if (end >= this.newsList.length - 1){
-        this.requestNews()
+        if (end >= this.newsList.length - 1){
+          this.requestNews()
       }
     })
     .height('100%')

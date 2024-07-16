@@ -4,6 +4,8 @@
     "pages/phoneZone",
     "pages/NewsPage",
     "pages/Privacy",
-    "pages/UserLience"
+    "pages/WebPage",
+    "pages/UserLience",
+    "pages/ShouJiYanZhengMa"
   ]
 }

@@ -1,12 +1,14 @@
 import promptAction from '@ohos.promptAction';
-import { router } from '@kit.ArkUI';
+import { router, display } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { User } from '../models/User';
 import { userGroup } from '../models/userGroup';
 import { phoneZones } from '../models/phoneZones';
-import Data from '../models/Data'
+import PhoneZoneData from '../models/PhoneZoneData'
+import UserPhoneNumData from '../models/UserPhoneNumData'
 import RegFinishDialog from '../component/RegFinishDialog'
 import isPrivacyDialog from '../component/isPrivacyDialog'
+
 
 function ifLoginButton(a: number, b: number, c: boolean) {
   if (a == 11 && b >= 6) {
@@ -15,7 +17,6 @@ function ifLoginButton(a: number, b: number, c: boolean) {
     return c = false
   }
 }
-
 
 @Entry
 @Component
@@ -38,7 +39,6 @@ struct home {
   @State isPrivacySelected: boolean = false;
 
   controller: TextInputController = new TextInputController();
-  //control
   dialogController: CustomDialogController | null = new CustomDialogController({
     builder: isPrivacyDialog({
       confirm: () => {
@@ -65,10 +65,9 @@ struct home {
     customStyle: false,
     cornerRadius: 10,
   })
-
   controller2: CustomDialogController = new CustomDialogController({
     builder: RegFinishDialog({
-      username: this.user.userName,
+      username: this.user.Phone,
       confirm: () => {
         router.pushUrl({
           url: "pages/NewsPage",
@@ -76,9 +75,24 @@ struct home {
         })
       }
     }),
+    cancel: this.exitApp,
+    autoCancel: true,
+    onWillDismiss: (dismissDialogAction: DismissDialogAction) => {
+      console.info("reason=" + JSON.stringify(dismissDialogAction.reason))
+      console.log("dialog onWillDismiss")
+      if (dismissDialogAction.reason == DismissReason.PRESS_BACK) {
+        dismissDialogAction.dismiss()
+      }
+      if (dismissDialogAction.reason == DismissReason.TOUCH_OUTSIDE) {
+        dismissDialogAction.dismiss()
+      }
+    },
     height: 200,
-    autoCancel: false
   })
+
+  aboutToAppear() {
+
+  }
 
   // 在自定义组件即将析构销毁时将dialogController置空
   aboutToDisappear() {
@@ -94,12 +108,11 @@ struct home {
   exitApp() {
   }
 
-  onPageShow(): void{
-    if(router.getParams()){
-      let params:Data  = router.getParams() as Data
+  onPageShow() {
+    if (router.getParams()) {
+      let params: PhoneZoneData = router.getParams() as PhoneZoneData
       this.currentphoneZoneIndex = params.id as number
     }
-
   }
 
   build() {
@@ -161,7 +174,7 @@ struct home {
               .onClick(() => {
                 console.info(`Succeeded in clicking the 'phoneZone' button.`)
                 // 跳转到归属地页
-                router.pushUrl({ url: 'pages/phoneZone', params: new Data(this.currentphoneZoneIndex)}).then(() => {
+                router.pushUrl({ url: 'pages/phoneZone', params: new PhoneZoneData(this.currentphoneZoneIndex) }).then(() => {
                   console.info('Succeeded in jumping to the phoneZone page.')
                 }).catch((err: BusinessError) => {
                   console.error(`Failed to jump to the phoneZone page. Code is ${err.code}, message is ${err.message}`)
@@ -178,14 +191,14 @@ struct home {
                 .type(InputType.USER_NAME)
                 .fontSize(25)
                 .backgroundColor(Color.White)
-                .onChange((value) => {
-                  this.user.userName = this.phoneinputText;
+                .onChange(() => {
+                  this.user.Phone = this.phoneinputText;
                   if (this.phoneinputText == '') {
                     this.ClearPhoneInputstate = Visibility.None
                   } else {
                     this.ClearPhoneInputstate = Visibility.Visible
                   }
-                  if (this.user.userName.length == 11 &&
+                  if (this.user.Phone.length == 11 &&
                     (this.user.passWord.length >= 6 || this.phoneInputState == Visibility.Visible)) {
                     this.loginButtonState = true
                   } else {
@@ -212,7 +225,7 @@ struct home {
                   Text("❌️")
                 }
                 .onClick(() => {
-                  this.user.userName = '';
+                  this.user.Phone = '';
                   this.phoneinputText = '';
                 })
                 .backgroundColor(Color.White)
@@ -260,7 +273,7 @@ struct home {
               .constraintSize({ minHeight: 50 })
               .tabIndex(1)
               .fontSize(18)
-              .onChange((value: string) => {
+              .onChange(() => {
                 this.user.passWord = this.pinputText;
                 if (this.pinputText == '') {
                   this.ClearPInputstate = Visibility.None
@@ -269,7 +282,7 @@ struct home {
                 }
                 if (this.phoneInputState == Visibility.None) {
                   this.loginButtonState =
-                    ifLoginButton(this.user.userName.length, this.user.passWord.length, this.loginButtonState)
+                    ifLoginButton(this.user.Phone.length, this.user.passWord.length, this.loginButtonState)
                 }
               })
               .onEditChange((isEditing: boolean) => {
@@ -394,18 +407,18 @@ struct home {
                 this.dialogController.open()
               }
             } else {
-              if(this.user.userName=='19946156936'){
-                if(this.user.passWord == '040310'){
-                  this.controller2.open()
-                }
-                else {
-                  //this.controller3.open()
-                  }
-              }
-              else {
-                //this.controller4.open()
-              }
+              // if(this.user.userName=='19946156936'){
+              //if(this.user.passWord == '040310'){
+              this.controller2.open()
+              // }
+              // else {
+              //this.controller3.open()
+              //  }
             }
+            //else {
+            //this.controller4.open()
+            // }
+            //}
           })
       }
       .height("100%")
@@ -423,6 +436,13 @@ struct home {
               }
             } else {
               console.debug(`${JSON.stringify(this.user)}`)
+              console.info(`Succeeded in clicking the 'ShouJiYanZhengMa' button.`)
+              // 跳转到归属地页
+              router.pushUrl({ url: 'pages/ShouJiYanZhengMa', params: new UserPhoneNumData(this.currentphoneZoneIndex,this.user.Phone)}).then(() => {
+                console.info('Succeeded in jumping to the ShouJiYanZhengMa page.')
+              }).catch((err: BusinessError) => {
+                console.error(`Failed to jump to the ShouJiYanZhengMa page. Code is ${err.code}, message is ${err.message}`)
+              })
             }
           })
       }
@@ -443,7 +463,7 @@ struct home {
             this.phoneInputState = Visibility.Visible
             this.passwdInputState = Visibility.None
             this.pinputText = ""
-            if (this.user.userName.length == 11) {
+            if (this.user.Phone.length == 11) {
               this.loginButtonState = true
             } else {
               this.loginButtonState = false
@@ -467,7 +487,7 @@ struct home {
             this.phoneInputState = Visibility.None
             this.passwdInputState = Visibility.Visible
             this.loginButtonState =
-              ifLoginButton(this.user.userName.length, this.user.passWord.length, this.loginButtonState)
+              ifLoginButton(this.user.Phone.length, this.user.passWord.length, this.loginButtonState)
           })
         }
         .width("50%")
@@ -488,11 +508,18 @@ struct home {
       .margin({ top: 20 })
       .height("100%")
       .layoutWeight(2)
+
+      Row() {
+        Blank()
+      }
+      .layoutWeight(3)
     }
     .id("root")
     .height('100%')
     .width('100%')
     .onClick(() => {
+      this.PH1size = this.defaultPHFont
+      this.PH2size = this.defaultPHFont
       this.controller.stopEditing()
     })
     .focusable(true)

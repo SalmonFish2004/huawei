@@ -1,13 +1,13 @@
 import { router } from '@kit.ArkUI';
 import { BusinessError } from '@kit.BasicServicesKit';
-import Data from '../models/Data'
+import PhoneZoneData from '../models/PhoneZoneData'
 
 @Entry
 @Component
 struct phoneZone {
   currentphoneZoneIndex: number = 0;
   aboutToAppear(): void {
-    let params:Data  = router.getParams() as Data
+    let params:PhoneZoneData  = router.getParams() as PhoneZoneData
     this.currentphoneZoneIndex = params.id as number
   }
   

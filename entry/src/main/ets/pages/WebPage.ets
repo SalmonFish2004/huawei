@@ -13,6 +13,8 @@ struct WebPage {
         .onControllerAttached(() => {
           this.webController.setCustomUserAgent("mozilla/5.0 (linux; android 12; harmonyos; jad-al00; hmscore 6.8.0.332 applewebkit/537.36 (khtml, like gecko) chrome/99.0.4844.88 huaweibrowser/13.0.0.310 mobile safari/537.36")
         })
+        .width("100%")
+        .height("100%")
     }
     .height('100%')
     .width('100%')
